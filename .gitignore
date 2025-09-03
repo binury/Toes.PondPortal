@@ -5,3 +5,11 @@
 
 bin/
 obj/
+gdscripts/Chalk++.pck
+*.otf
+*.zip
+*.dll
+*.pck
+thunderstore/GDWeave/mods/manifest.json
+*.7z
+thunderstore/LICENSE

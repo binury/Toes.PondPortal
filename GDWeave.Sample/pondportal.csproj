@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <RootNamespace>MyModName</RootNamespace>
+    <RootNamespace>PondPortal</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblySearchPaths>$(AssemblySearchPaths);$(GDWeavePath)/core;C:/Program Files (x86)/Steam/steamapps/common/WEBFISHING/GDWeave/core</AssemblySearchPaths>
-    <AssemblyName>MyModName</AssemblyName>
-    <Version>0.0.1</Version>
+    <AssemblyName>pondportal</AssemblyName>
+    <Version>1.0.0</Version>
     <Authors>Toes</Authors>
     <Company>Toes</Company>
   </PropertyGroup>

@@ -1,11 +1,16 @@
 {
-  "Id": "Toes.MyModName",
-  "AssemblyPath": "MyModName.dll",
+  "Id": "Toes.PondPortal",
+  "AssemblyPath": "pondportal.dll",
+  "PackPath": "pondportal.pck",
+  "Dependencies": [
+    "TackleBox",
+    "Toes.Socks"
+  ],
   "Metadata": {
-    "Name": "The Coolest Latest Mod Without a Name Yet",
+    "Name": "Pond Portal",
     "Author": "Toes",
-    "Version": "0.0.1",
-    "Description": "[This description is shown in some mod managers and might also be used in-game in Mod Settings menu]",
+    "Version": "1.0.0",
+    "Description": "Embrace chaos and dive into the pond to teleport to another dimension",
     "Homepage": "https://ko-fi.com/toooes"
   }
 }

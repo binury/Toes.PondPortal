@@ -20,9 +20,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Text;
 using GDWeave.Godot;
 using GDWeave.Godot.Variants;
+using System.Text;
 
 namespace util;
 
@@ -50,7 +50,7 @@ public static class ScriptTokenizer
 			{ "func", TokenType.PrFunction },
 			{ "class", TokenType.PrClass },
 			{ "extends", TokenType.PrExtends },
-			{ "is", TokenType.PrIs },
+			// { "is", TokenType.PrIs },
 			{ "as", TokenType.PrAs },
 			{ "onready", TokenType.PrOnready },
 			{ "@tool", TokenType.PrTool },
@@ -447,37 +447,37 @@ public static class ScriptTokenizer
 			switch (text[i])
 			{
 				case '"':
-				// TODO: support single quote strings
-				{
-					yield return ClearBuilder();
-					builder.Append('"');
-					i++;
-					for (; i < text.Length; i++)
+					// TODO: support single quote strings
 					{
-						builder.Append(text[i]);
-						if (text[i] == '"')
+						yield return ClearBuilder();
+						builder.Append('"');
+						i++;
+						for (; i < text.Length; i++)
 						{
-							break;
+							builder.Append(text[i]);
+							if (text[i] == '"')
+							{
+								break;
+							}
 						}
-					}
 
-					yield return ClearBuilder();
-					continue;
-				}
+						yield return ClearBuilder();
+						continue;
+					}
 
 				// This is stupid and awful
 				case '\n':
-				{
-					yield return ClearBuilder();
-					var start = i;
-					i++;
-					for (; i < text.Length && text[i] == '\t'; i++)
-						;
-					i--;
-					yield return "\n";
-					yield return $"{i - start}";
-					continue;
-				}
+					{
+						yield return ClearBuilder();
+						var start = i;
+						i++;
+						for (; i < text.Length && text[i] == '\t'; i++)
+							;
+						i--;
+						yield return "\n";
+						yield return $"{i - start}";
+						continue;
+					}
 			}
 
 			var matched = false;

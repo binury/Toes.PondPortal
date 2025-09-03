@@ -1,9 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MyModName;
+namespace PondPortal;
 
 public class Config(ConfigFileSchema configFile)
 {
-	[JsonInclude]
-	public bool infiniteChatRange = configFile.infiniteChatRange;
+	// Unused
 }
