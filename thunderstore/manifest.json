@@ -1,9 +1,10 @@
 {
     "name":  "Pond_Portal",
     "author":  "Toes",
-    "version_number":  "1.0.0",
+    "version_number":  "1.0.1",
     "website_url":  "https://github.com/binury/Toes.PondPortal",
     "dependencies":  [
+                         "PuppyGirl-TackleBox-0.5.2",
                          "toes-Socks-0.999.0"
                      ],
     "description":  "🅳🅸🆅🅴 🅸🅽🆃🅾 🆃🅷🅴 🅿🅾🅽🅳 🅰🅽🅳 🅴🅼🅱🆁🅰🅲🅴 🅲🅷🅰🅾🆂"
