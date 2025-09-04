@@ -123,7 +123,7 @@ func _on_water_entered(area: Area) -> bool:
 	if result == null:
 		return false
 	var water_id = int(result.strings[1])
-	var is_portal_water = (water_id <= 15) or (water_id in [20, 21, 22, 23, 24, 25, 26, 51, 52, 53, 54, 55, 56, 57, 59])
+	var is_portal_water = (water_id <= 19) or (water_id in [20, 21, 22, 23, 24, 25, 26, 51, 52, 53, 54, 55, 56, 57, 59])
 	if not is_portal_water:
 		return false
 	if Players.local_player.diving:
