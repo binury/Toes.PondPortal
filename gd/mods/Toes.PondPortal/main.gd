@@ -18,17 +18,17 @@ var timer := Timer.new()
 var just_took_portal := false
 
 var default_config := {
-	"allowMature": true
+	"allowMature": false
 }
 var config := {}
 
 var last_call_times = {}
-func call_debounced(key: String, func_ref: FuncRef, delay_secs: float) -> void:
+func call_debounced(key: String, func_ref: FuncRef, delay_secs: float, args := []) -> void:
 	var now = OS.get_ticks_msec()
 	var last = last_call_times.get(key, -delay_secs * 1000.0)
 	if now - last >= delay_secs * 1000.0:
 		last_call_times[key] = now
-		func_ref.call_func()
+		func_ref.call_funcv(args)
 
 
 func init_config() -> void:
@@ -46,6 +46,11 @@ func save_config() -> void:
 	TackleBox.set_mod_config(MOD_ID, config)
 
 
+func _process(__):
+	if Players.local_player == null or is_instance_valid(Players.local_player) == false:
+		return
+	_fix_paint_node_collision_shape()
+
 func _ready():
 	init_config()
 	Network.connect("_connected_to_lobby", self, "on_ingame")
@@ -57,7 +62,7 @@ func _ready():
 
 	timer.name = "PondPortal Lobby Refresh"
 	timer.wait_time = 15
-	timer.autostart = true
+	timer.autostart = false
 	timer.connect("timeout", self, "_refresh_lobbies")
 	add_child(timer)
 
@@ -80,7 +85,6 @@ func _lobby_list_returned(lobbies: Array):
 		var browser_visible := Steam.getLobbyData(lobby_id, "public")
 		var population := int(Steam.getLobbyData(lobby_id, "count"))
 		var population_cap := int(Steam.getLobbyData(lobby_id, "cap"))
-
 		var is_mature = int(Steam.getLobbyData(lobby_id, "mature")) == 1
 		var is_modded = int(Steam.getLobbyData(lobby_id, "modded")) == 1
 
@@ -97,9 +101,8 @@ func _lobby_list_returned(lobbies: Array):
 
 
 func _on_ingame():
-	yield(get_tree().create_timer(3.0), "timeout")
-	recently_visited[Network.STEAM_LOBBY_ID] = true
 	_send_greeting_message()
+	recently_visited[Network.STEAM_LOBBY_ID] = true
 	_refresh_lobbies()
 	timer.start()
 
@@ -111,19 +114,31 @@ func _on_outgame():
 func _lobby_sort_random(a, b): return randf() < 0.5
 
 
-func _on_water_entered():
+func _on_water_entered(area: Area) -> bool:
+	var matcher := RegEx.new()
+	# /root/world/Viewport/main/map/main_map/zones/main_zone/lake_water/water47/Area
+	var area_path := str(area.get_path())
+	matcher.compile("lake_water/water(\\d+)")
+	var result = matcher.search(area_path)
+	if result == null:
+		return false
+	var water_id = int(result.strings[1])
+	var is_portal_water = (water_id <= 15) or (water_id in [20, 21, 22, 23, 24, 25, 26, 51, 52, 53, 54, 55, 56, 57, 59])
+	if not is_portal_water:
+		return false
 	if Players.local_player.diving:
-		# print("POND PORTAL ENTERED")
 		if known_lobbies.empty():
 			Chat.write("The pond portal isn't ready yet! Try again shortly")
 			return false
 		just_took_portal = true
 		var portal_noise: AudioStreamPlayer = get_node("PortalNoise")
+		portal_noise.pitch_scale = rand_range(0.7, 0.85)
 		portal_noise.play()
-		portal_to(known_lobbies[randi() % known_lobbies.size()])
+		_portal_to(known_lobbies[randi() % known_lobbies.size()])
 		return true
 	else:
 		Chat.write("(If you were trying to use it, the Pond Portal only works when you [b]dive[/b] in!)")
+	return false
 
 
 func _send_greeting_message():
@@ -134,26 +149,37 @@ func _send_greeting_message():
 func _send_leaving_message():
 	Chat.emote("jumped into the Pond Portal and went to another dimension. Bye!")
 
+## Changes the player's paint_node area from a box to a flat plane
+## this allows for reliably detecting collision with water areas
+## which otherwise will always detect from the paint_node (???)
+func _fix_paint_node_collision_shape():
+	var paint_node: Spatial = Players.local_player.get_node("paint_node")
+	var paint_node_area: Area = paint_node.get_node("Area")
+	var collision: CollisionShape = paint_node_area.get_child(0)
+	if not collision.get_shape() is PlaneShape:
+		var replacement_collision := PlaneShape.new()
+		collision.set_shape(replacement_collision)
 
-# Debounced methods
-func on_ingame():
-	call_debounced("in_game", funcref(self, "_on_ingame"), 10.0)
-func on_water_entered():
-	call_debounced("on_drown", funcref(self, "_on_water_entered"), 10.0)
-func send_greeting_message():
-	call_debounced("greeting", funcref(self, "_send_greeting_message"), 10.0)
-func send_leaving_message():
-	call_debounced("leaving", funcref(self, "_send_leaving_message"), 10.0)
 
-
-func portal_to(lobby_id) -> void:
+func _portal_to(lobby_id) -> void:
+	just_took_portal = true
 	send_leaving_message()
 	Network._leave_lobby()
 	Network._reset_lobby_status()
 	Network._reset_network_socket()
 	Network._connect_to_lobby(lobby_id)
 
-	yield(get_tree().create_timer(3.5), "timeout")
-	send_greeting_message()
+	yield(get_tree().create_timer(4.0), "timeout")
+	# Have to forcibly call this due to Socks not triggering out->in signal
+	_on_ingame()
 
 
+# Debounced methods
+func on_ingame():
+	call_debounced("in_game", funcref(self, "_on_ingame"), 10.0)
+func on_water_entered(area: Area):
+	call_debounced("on_drown", funcref(self, "_on_water_entered"), 5.0, [area])
+func send_greeting_message():
+	call_debounced("greeting", funcref(self, "_send_greeting_message"), 10.0)
+func send_leaving_message():
+	call_debounced("leaving", funcref(self, "_send_leaving_message"), 10.0)

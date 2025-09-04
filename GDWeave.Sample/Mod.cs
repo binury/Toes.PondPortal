@@ -27,7 +27,7 @@ public class Mod : IMod
 
 							if area.is_in_group("water"):
 								var PondPortal = get_node("/root/ToesPondPortal")
-								var portaled = PondPortal.on_water_entered()
+								var portaled = PondPortal.on_water_entered(area)
 								if portaled: return
 
 							""",
