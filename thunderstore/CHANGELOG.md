@@ -1,7 +1,7 @@
 # Changelog
 
-## 0.0.2
-- Gonna add some great stuff
-- Fixed that one thing that happened cause I got excited and
-published my mod too quick
-- Doubled fun
+## 1.2.1
+
+- Added portal sound effects
+- Changed portal to only activate in lake/ponds
+- Fixed mature lobby config defaulting to true (sorry!)
