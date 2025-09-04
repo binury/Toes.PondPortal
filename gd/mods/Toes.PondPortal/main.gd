@@ -4,6 +4,8 @@ enum LOBBY_DISTANCE{CLOSE, NORMAL, FAR, WORLDWIDE}
 
 const MOD_ID := "Toes.PondPortal"
 
+var portal_noise_scene := preload("res://mods/Toes.PondPortal/scenes/portal_noise.tscn")
+
 onready var TackleBox := $"/root/TackleBox"
 onready var Chat = get_node("/root/ToesSocks/Chat")
 onready var Players = get_node("/root/ToesSocks/Players")
@@ -49,6 +51,9 @@ func _ready():
 	Network.connect("_connected_to_lobby", self, "on_ingame")
 	Network.connect("_webfishing_lobbies_returned", self, "_lobby_list_returned")
 	Players.connect("ingame", self, "on_ingame")
+
+	var portal_noise = portal_noise_scene.instance()
+	add_child(portal_noise)
 
 	timer.name = "PondPortal Lobby Refresh"
 	timer.wait_time = 15
@@ -113,10 +118,13 @@ func _on_water_entered():
 			Chat.write("The pond portal isn't ready yet! Try again shortly")
 			return false
 		just_took_portal = true
+		var portal_noise: AudioStreamPlayer = get_node("PortalNoise")
+		portal_noise.play()
 		portal_to(known_lobbies[randi() % known_lobbies.size()])
 		return true
 	else:
 		Chat.write("(If you were trying to use it, the Pond Portal only works when you [b]dive[/b] in!)")
+
 
 func _send_greeting_message():
 	if just_took_portal:
@@ -144,8 +152,8 @@ func portal_to(lobby_id) -> void:
 	Network._reset_lobby_status()
 	Network._reset_network_socket()
 	Network._connect_to_lobby(lobby_id)
-	
+
 	yield(get_tree().create_timer(3.5), "timeout")
 	send_greeting_message()
-	
-	
+
+

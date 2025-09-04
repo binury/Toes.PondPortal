@@ -25,13 +25,10 @@ public class Mod : IMod
 						.With(
 							"""
 
-							print("Entered water area")
 							if area.is_in_group("water"):
 								var PondPortal = get_node("/root/ToesPondPortal")
 								var portaled = PondPortal.on_water_entered()
 								if portaled: return
-							else:
-								print("Area is not in group water")
 
 							""",
 							1

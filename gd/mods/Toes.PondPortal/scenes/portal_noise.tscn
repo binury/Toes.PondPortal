@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://mods/Toes.PondPortal/resources/nether-portal.tres" type="AudioStream" id=1]
+
+[node name="PortalNoise" type="AudioStreamPlayer"]
+stream = ExtResource( 1 )
+volume_db = -18.417
+pitch_scale = 0.89
+mix_target = 1
+bus = "SFX"

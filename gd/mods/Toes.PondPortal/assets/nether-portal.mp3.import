@@ -1,0 +1,15 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+path="res://.import/nether-portal.mp3-30485a0fe05ffa2c319c73dfa0cb80a3.mp3str"
+
+[deps]
+
+source_file="res://mods/Toes.PondPortal/assets/nether-portal.mp3"
+dest_files=[ "res://.import/nether-portal.mp3-30485a0fe05ffa2c319c73dfa0cb80a3.mp3str" ]
+
+[params]
+
+loop=true
+loop_offset=0
