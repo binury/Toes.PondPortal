@@ -80,6 +80,11 @@ func _validate_config() -> bool:
 	)
 
 
+func _config_updated(id: String, __):
+	if id == MOD_ID:
+		_init_config()
+
+
 func _process(__):
 	if Players.local_player == null or is_instance_valid(Players.local_player) == false:
 		return
@@ -91,6 +96,7 @@ func _ready():
 	Network.connect("_connected_to_lobby", self, "on_ingame")
 	Network.connect("_webfishing_lobbies_returned", self, "_lobby_list_returned")
 	Players.connect("ingame", self, "on_ingame")
+	TackleBox.connect("mod_config_updated", self, "_config_updated")
 
 	var portal_noise = portal_noise_scene.instance()
 	add_child(portal_noise)
@@ -169,7 +175,7 @@ func _on_water_entered(area: Area) -> bool:
 	if not is_portal_water:
 		return false
 	if Players.local_player.diving:
-		if Players.get_lobby_owner() == Players.local_player:
+		if Players.get_lobby_owner() == Players.local_player and config.allowWhenLobbyHost == false:
 			Chat.write("Your [url=%s]current settings[/url] deactivate Pond Portal while hosting a lobby" % CONFIG_FILE_URI)
 			return false
 		if known_lobbies.empty():
