@@ -1,6 +1,6 @@
 extends Node
 
-enum LOBBY_DISTANCE{CLOSE, NORMAL, FAR, WORLDWIDE}
+enum LOBBY_DISTANCE { CLOSE, NORMAL, FAR, WORLDWIDE }
 
 const MOD_ID := "Toes.PondPortal"
 
@@ -17,12 +17,22 @@ var timer := Timer.new()
 
 var just_took_portal := false
 
+var CONFIG_FILE_URI : String
 var default_config := {
-	"allowMature": false
+	"allowMature": false,
+	"sendGreetingMessage": true,
+	"greetingMessage": "arrived through the Pond Portal... neat!",
+	"sendPartingMessage": true,
+	"partingMessage": "jumped into the Pond Portal and went to another dimension. Bye!",
+	"allowWhenLobbyHost": true,
+	"allowLakePortal": true,
+	"playPortalSound": true
 }
 var config := {}
 
 var last_call_times = {}
+
+
 func call_debounced(key: String, func_ref: FuncRef, delay_secs: float, args := []) -> void:
 	var now = OS.get_ticks_msec()
 	var last = last_call_times.get(key, -delay_secs * 1000.0)
@@ -31,7 +41,15 @@ func call_debounced(key: String, func_ref: FuncRef, delay_secs: float, args := [
 		func_ref.call_funcv(args)
 
 
-func init_config() -> void:
+func _get_config_path(mod_id: String) -> String:
+	var file := File.new()
+	var config_file_path: String = TackleBox._get_gdweave_dir().plus_file(mod_id + ".json")
+	var exists: bool = file.file_exists(config_file_path)
+	return config_file_path if exists else ""
+
+
+func _init_config() -> void:
+	CONFIG_FILE_URI = "file://" + _get_config_path(MOD_ID)
 	var saved_config = TackleBox.get_mod_config(MOD_ID)
 	if not saved_config:
 		saved_config = default_config.duplicate()
@@ -39,11 +57,27 @@ func init_config() -> void:
 		if not saved_config.has(key):
 			saved_config[key] = default_config[key]
 	config = saved_config
-	save_config()
+	_save_config()
 
 
-func save_config() -> void:
+func _save_config() -> void:
+	var valid_config = _validate_config()
+	if not valid_config:
+		print("[POND PORTAL] INVALID CONFIGURATION - USING DEFAULT AS FALLBACK")
+		config = default_config.duplicate()
 	TackleBox.set_mod_config(MOD_ID, config)
+
+
+func _validate_config() -> bool:
+	return (
+		config.allowMature is bool
+		and config.sendGreetingMessage is bool
+		and config.greetingMessage is String
+		and config.sendPartingMessage is bool
+		and config.allowWhenLobbyHost is bool
+		and config.allowLakePortal is bool
+		and config.playPortalSound is bool
+	)
 
 
 func _process(__):
@@ -51,8 +85,9 @@ func _process(__):
 		return
 	_fix_paint_node_collision_shape()
 
+
 func _ready():
-	init_config()
+	_init_config()
 	Network.connect("_connected_to_lobby", self, "on_ingame")
 	Network.connect("_webfishing_lobbies_returned", self, "_lobby_list_returned")
 	Players.connect("ingame", self, "on_ingame")
@@ -68,9 +103,7 @@ func _ready():
 
 
 func _refresh_lobbies():
-	var tags_to_filter := [
-		"talkative", "quiet", "grinding", "chill", "silly", "hardcore", "modded"
-	]
+	var tags_to_filter := ["talkative", "quiet", "grinding", "chill", "silly", "hardcore", "modded"]
 	if config.get("allowMature", false):
 		tags_to_filter.append("mature")
 	Network._find_all_webfishing_lobbies(tags_to_filter, false)
@@ -78,7 +111,7 @@ func _refresh_lobbies():
 
 func _lobby_list_returned(lobbies: Array):
 	lobbies.sort_custom(self, "_lobby_sort_random")
-	var sorted_lobbies := lobbies # lol Godot3
+	var sorted_lobbies := lobbies  # lol Godot3
 	var list := []
 	for lobby_id in sorted_lobbies:
 		# var lobby_num_members := Steam.getNumLobbyMembers(lobby_id)
@@ -89,11 +122,15 @@ func _lobby_list_returned(lobbies: Array):
 		var is_modded = int(Steam.getLobbyData(lobby_id, "modded")) == 1
 
 		# Filters
-		if browser_visible != "true": continue
-		if population >= population_cap: continue
-		if lobby_id in recently_visited.keys(): continue
+		if browser_visible != "true":
+			continue
+		if population >= population_cap:
+			continue
+		if lobby_id in recently_visited.keys():
+			continue
 		# if known_lobbies.has(lobby_id): continue
-		if population == 0: continue
+		if population == 0:
+			continue
 
 		list.append(lobby_id)
 	known_lobbies = list
@@ -111,7 +148,8 @@ func _on_outgame():
 	timer.stop()
 
 
-func _lobby_sort_random(a, b): return randf() < 0.5
+func _lobby_sort_random(a, b):
+	return randf() < 0.5
 
 
 func _on_water_entered(area: Area) -> bool:
@@ -123,17 +161,25 @@ func _on_water_entered(area: Area) -> bool:
 	if result == null:
 		return false
 	var water_id = int(result.strings[1])
-	var is_portal_water = (water_id <= 19) or (water_id in [20, 21, 22, 23, 24, 25, 26, 51, 52, 53, 54, 55, 56, 57, 59])
+	var valid_portal_locations := [20, 21, 22, 23, 24, 25, 26, 51, 52, 53, 54, 55, 56, 57, 59]
+	if config.allowLakePortal:
+		for id in range(2, 17):
+			valid_portal_locations.append(id)
+	var is_portal_water = water_id in valid_portal_locations
 	if not is_portal_water:
 		return false
 	if Players.local_player.diving:
+		if Players.get_lobby_owner() == Players.local_player:
+			Chat.write("Your [url=%s]current settings[/url] deactivate Pond Portal while hosting a lobby" % CONFIG_FILE_URI)
+			return false
 		if known_lobbies.empty():
-			Chat.write("The pond portal isn't ready yet! Try again shortly")
+			Chat.write("The pond portal isn't ready yet or there were no destinations available! Wait a minute and try again...")
 			return false
 		just_took_portal = true
-		var portal_noise: AudioStreamPlayer = get_node("PortalNoise")
-		portal_noise.pitch_scale = rand_range(0.7, 0.85)
-		portal_noise.play()
+		if config.playPortalSound:
+			var portal_noise: AudioStreamPlayer = get_node("PortalNoise")
+			portal_noise.pitch_scale = rand_range(0.7, 0.85)
+			portal_noise.play()
 		_portal_to(known_lobbies[randi() % known_lobbies.size()])
 		return true
 	else:
@@ -142,12 +188,18 @@ func _on_water_entered(area: Area) -> bool:
 
 
 func _send_greeting_message():
+	if not config.sendGreetingMessage:
+		return
 	if just_took_portal:
-		Chat.emote("arrived through the Pond Portal... neat!")
+		Chat.emote(config.greeting)
 	just_took_portal = false
 
+
 func _send_leaving_message():
-	Chat.emote("jumped into the Pond Portal and went to another dimension. Bye!")
+	if not config.sendPartingMessage:
+		return
+	Chat.emote(config.partingMessage)
+
 
 ## Changes the player's paint_node area from a box to a flat plane
 ## this allows for reliably detecting collision with water areas
@@ -177,9 +229,15 @@ func _portal_to(lobby_id) -> void:
 # Debounced methods
 func on_ingame():
 	call_debounced("in_game", funcref(self, "_on_ingame"), 10.0)
+
+
 func on_water_entered(area: Area):
 	call_debounced("on_drown", funcref(self, "_on_water_entered"), 5.0, [area])
+
+
 func send_greeting_message():
 	call_debounced("greeting", funcref(self, "_send_greeting_message"), 10.0)
+
+
 func send_leaving_message():
 	call_debounced("leaving", funcref(self, "_send_leaving_message"), 10.0)
