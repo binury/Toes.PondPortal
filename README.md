@@ -29,7 +29,7 @@ var default_config := {
 
 ## Changelog
 
-### 1.2.2 Added tons of settings - check em out
+### 1.3.0 Added tons of settings - check em out
 
 ### 1.2.1
 
