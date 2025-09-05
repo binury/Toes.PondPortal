@@ -1,6 +1,6 @@
 extends Node
 
-enum LOBBY_DISTANCE { CLOSE, NORMAL, FAR, WORLDWIDE }
+enum LOBBY_DISTANCE {CLOSE, NORMAL, FAR, WORLDWIDE}
 
 const MOD_ID := "Toes.PondPortal"
 
@@ -19,7 +19,7 @@ var just_took_portal := false
 ## Where the player portaled from
 var portal_in_pos
 
-var CONFIG_FILE_URI : String
+var CONFIG_FILE_URI: String
 var default_config := {
 	"allowMature": false,
 	"sendGreetingMessage": true,
@@ -28,7 +28,8 @@ var default_config := {
 	"partingMessage": "jumped into the Pond Portal and went to another dimension. Bye!",
 	"allowWhenLobbyHost": true,
 	"allowLakePortal": true,
-	"playPortalSound": true
+	"playPortalSound": true,
+	"minimumLobbyPopulation": 1,
 }
 var config := {}
 
@@ -79,11 +80,13 @@ func _validate_config() -> bool:
 		and config.allowWhenLobbyHost is bool
 		and config.allowLakePortal is bool
 		and config.playPortalSound is bool
+		and config.minimumLobbyPopulation is int
 	)
 
 
 func _config_updated(id: String, __):
 	if id == MOD_ID:
+		Chat.write("[color=purple]Pond Portal Settings Reloaded ✅[/color]")
 		_init_config()
 
 
@@ -92,7 +95,7 @@ func _process(__):
 		just_took_portal = false
 		portal_in_pos = null
 	if Players.local_player != null and is_instance_valid(Players.local_player):
-	_fix_paint_node_collision_shape()
+		_fix_paint_node_collision_shape()
 
 
 func _ready():
@@ -123,7 +126,7 @@ func _refresh_lobbies():
 
 func _lobby_list_returned(lobbies: Array):
 	lobbies.sort_custom(self, "_lobby_sort_random")
-	var sorted_lobbies := lobbies  # lol Godot3
+	var sorted_lobbies := lobbies # lol Godot3
 	var list := []
 	for lobby_id in sorted_lobbies:
 		# var lobby_num_members := Steam.getNumLobbyMembers(lobby_id)
@@ -141,7 +144,7 @@ func _lobby_list_returned(lobbies: Array):
 		if lobby_id in recently_visited.keys():
 			continue
 		# if known_lobbies.has(lobby_id): continue
-		if population == 0:
+		if population < config.minimumLobbyPopulation:
 			continue
 
 		list.append(lobby_id)
@@ -206,7 +209,7 @@ func _send_greeting_message():
 	if not config.sendGreetingMessage:
 		return
 	if just_took_portal:
-		Chat.emote(config.greeting)
+		Chat.emote(config.greetingMessage)
 	just_took_portal = false
 
 

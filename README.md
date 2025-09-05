@@ -23,11 +23,18 @@ var default_config := {
     ## You will have to use the smaller ponds on the right side of the island
     "allowLakePortal": true,
     ## If set to false the cool sound effect is muted
-    "playPortalSound": true
+    "playPortalSound": true,
+    ## Servers with fewer than this number of players will be filtered out
+    "minimumLobbyPopulation": 1
 }
 ```
 
 ## Changelog
+
+### 1.4.0 OK, One more thing
+
+- Taking a portal sends you to the same position from whence you departed
+- Added setting `minimumLobbyPopulation`
 
 ### 1.3.0 Added tons of settings - check em out
 
