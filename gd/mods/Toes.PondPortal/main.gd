@@ -16,6 +16,8 @@ var recently_visited := {}
 var timer := Timer.new()
 
 var just_took_portal := false
+## Where the player portaled from
+var portal_in_pos
 
 var CONFIG_FILE_URI : String
 var default_config := {
@@ -86,16 +88,20 @@ func _config_updated(id: String, __):
 
 
 func _process(__):
-	if Players.local_player == null or is_instance_valid(Players.local_player) == false:
-		return
+	if str(get_tree().current_scene.get_path()) == "/root/main_menu":
+		just_took_portal = false
+		portal_in_pos = null
+	if Players.local_player != null and is_instance_valid(Players.local_player):
 	_fix_paint_node_collision_shape()
 
 
 func _ready():
 	_init_config()
-	Network.connect("_connected_to_lobby", self, "on_ingame")
+	# Network.connect("_connected_to_lobby", self, "on_ingame")
 	Network.connect("_webfishing_lobbies_returned", self, "_lobby_list_returned")
 	Players.connect("ingame", self, "on_ingame")
+	Players.connect("outgame", self, "on_outgame")
+	# Players.connect("at_main_menu", self, "_on_main_menu")
 	TackleBox.connect("mod_config_updated", self, "_config_updated")
 
 	var portal_noise = portal_noise_scene.instance()
@@ -144,6 +150,9 @@ func _lobby_list_returned(lobbies: Array):
 
 
 func _on_ingame():
+	if just_took_portal and portal_in_pos:
+		Players.local_player.global_transform.origin = portal_in_pos
+		portal_in_pos = false
 	_send_greeting_message()
 	recently_visited[Network.STEAM_LOBBY_ID] = true
 	_refresh_lobbies()
@@ -220,6 +229,7 @@ func _fix_paint_node_collision_shape():
 
 
 func _portal_to(lobby_id) -> void:
+	portal_in_pos = Players.local_player.last_valid_pos + Vector3(0, 8.5, 0)
 	just_took_portal = true
 	send_leaving_message()
 	Network._leave_lobby()
@@ -227,15 +237,12 @@ func _portal_to(lobby_id) -> void:
 	Network._reset_network_socket()
 	Network._connect_to_lobby(lobby_id)
 
-	yield(get_tree().create_timer(4.0), "timeout")
-	# Have to forcibly call this due to Socks not triggering out->in signal
-	_on_ingame()
-
 
 # Debounced methods
 func on_ingame():
 	call_debounced("in_game", funcref(self, "_on_ingame"), 10.0)
-
+func on_outgame():
+	call_debounced("out_game", funcref(self, "_on_outgame"), 10.0)
 
 func on_water_entered(area: Area):
 	call_debounced("on_drown", funcref(self, "_on_water_entered"), 5.0, [area])
