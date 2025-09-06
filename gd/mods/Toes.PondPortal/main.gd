@@ -60,7 +60,7 @@ func _init_config() -> void:
 		if not saved_config.has(key):
 			saved_config[key] = default_config[key]
 	config = saved_config
-	_save_config()
+	
 
 
 func _save_config() -> void:
@@ -84,7 +84,7 @@ func _validate_config() -> bool:
 	)
 
 
-func _config_updated(id: String, __):
+func _config_updated(id: String, new_config: Dictionary):
 	if id == MOD_ID:
 		Chat.write("[color=purple]Pond Portal Settings Reloaded ✅[/color]")
 		_init_config()
@@ -99,7 +99,9 @@ func _process(__):
 
 
 func _ready():
+	var base_dir = OS.get_executable_path().get_base_dir()
 	_init_config()
+	_save_config()
 	# Network.connect("_connected_to_lobby", self, "on_ingame")
 	Network.connect("_webfishing_lobbies_returned", self, "_lobby_list_returned")
 	Players.connect("ingame", self, "on_ingame")
@@ -125,6 +127,7 @@ func _refresh_lobbies():
 
 
 func _lobby_list_returned(lobbies: Array):
+	randomize()
 	lobbies.sort_custom(self, "_lobby_sort_random")
 	var sorted_lobbies := lobbies # lol Godot3
 	var list := []
