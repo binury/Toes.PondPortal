@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.2
+
+- Fixed crash when changing mod settings with Tacklebox
+  - Oops, infinite loops 🤷‍♀️
+
 ## 1.4.0 OK, One more thing
 
 - Taking a portal sends you to the same position from whence you departed
