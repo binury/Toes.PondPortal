@@ -73,14 +73,15 @@ func _save_config() -> void:
 
 func _validate_config() -> bool:
 	return (
-		config.allowMature is bool
-		and config.sendGreetingMessage is bool
-		and config.greetingMessage is String
-		and config.sendPartingMessage is bool
-		and config.allowWhenLobbyHost is bool
-		and config.allowLakePortal is bool
-		and config.playPortalSound is bool
-		and config.minimumLobbyPopulation is int
+		config != null
+		and config.get("allowMature") is bool
+		and config.get("sendGreetingMessage") is bool
+		and config.get("greetingMessage") is String
+		and config.get("sendPartingMessage") is bool
+		and config.get("allowWhenLobbyHost") is bool
+		and config.get("allowLakePortal") is bool
+		and config.get("playPortalSound") is bool
+		and config.get("minimumLobbyPopulation") is int
 	)
 
 
