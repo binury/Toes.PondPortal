@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.3
+
+- Fixed edge case where having empty settings could cause crash
+
 ## 1.4.2
 
 - Fixed crash when changing mod settings with Tacklebox
