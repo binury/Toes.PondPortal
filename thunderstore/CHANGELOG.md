@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.6
+
+- Hotfixes annoying 'mouse must be drawing zone' message
+
 ## 1.4.5
 
 - Fixed crashing after portal failure (when lobby full or timeout)

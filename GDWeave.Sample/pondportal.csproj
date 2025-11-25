@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<AssemblySearchPaths>$(AssemblySearchPaths);$(GDWeavePath)/core;C:/Program Files (x86)/Steam/steamapps/common/WEBFISHING/GDWeave/core</AssemblySearchPaths>
 		<AssemblyName>pondportal</AssemblyName>
-		<Version>1.4.5</Version>
+		<Version>1.4.6</Version>
 		<Authors>Toes</Authors>
 		<Company>Toes</Company>
 	</PropertyGroup>
