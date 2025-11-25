@@ -95,8 +95,10 @@ func _process(__):
 	if str(get_tree().current_scene.get_path()) == "/root/main_menu":
 		just_took_portal = false
 		portal_in_pos = null
-	if Players.local_player != null and is_instance_valid(Players.local_player):
-		_fix_paint_node_collision_shape()
+	# Avoid null edge cases during ticks
+	if not Players.in_game or not Players.local_player:
+		return
+	_fix_paint_node_collision_shape()
 
 
 func _ready():
@@ -227,6 +229,8 @@ func _send_leaving_message():
 ## this allows for reliably detecting collision with water areas
 ## which otherwise will always detect from the paint_node (???)
 func _fix_paint_node_collision_shape():
+	if Players.local_player == null:
+		return
 	var paint_node: Spatial = Players.local_player.get_node("paint_node")
 	var paint_node_area: Area = paint_node.get_node("Area")
 	var collision: CollisionShape = paint_node_area.get_child(0)

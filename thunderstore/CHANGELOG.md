@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.5
+
+- Fixed crashing after portal failure (when lobby full or timeout)
+
 ## 1.4.3
 
 - Fixed edge case where having empty settings could cause crash
