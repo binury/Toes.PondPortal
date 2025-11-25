@@ -80,7 +80,7 @@ public static class ScriptTokenizer
 			{ "error", TokenType.Error },
 			{ "cursor", TokenType.Cursor },
 			{ "self", TokenType.Self },
-			{ "in", TokenType.OpIn },
+			// { "in", TokenType.OpIn },
 			{ "or", TokenType.OpOr },
 			{ "and", TokenType.OpAnd },
 			{ "not", TokenType.OpNot },

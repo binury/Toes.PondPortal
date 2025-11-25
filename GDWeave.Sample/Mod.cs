@@ -20,7 +20,10 @@ public class Mod : IMod
 						.Named("Drowning override")
 						.Do(Operation.Append)
 						.Matching(
-							TransformationPatternFactory.CreateFunctionDefinitionPattern("_on_water_detect_area_entered", ["area"])
+							TransformationPatternFactory.CreateFunctionDefinitionPattern(
+								"_on_water_detect_area_entered",
+								["area"]
+							)
 						)
 						.With(
 							"""
@@ -29,6 +32,32 @@ public class Mod : IMod
 								var PondPortal = get_node("/root/ToesPondPortal")
 								var portaled = PondPortal.on_water_entered(area)
 								if portaled: return
+
+							""",
+							1
+						)
+				)
+				.Build()
+		);
+
+		// TODO: Fix or replace Plane collision
+		mi.RegisterScriptMod(
+			new TransformationRuleScriptModBuilder()
+				.ForMod(mi)
+				.Named("Hotfix annoying 'mouse must be drawing zone'")
+				.Patching("res://Scenes/Entities/Player/player.gdc")
+				.AddRule(
+					new TransformationRuleBuilder()
+						.Named("Override in_zone to true")
+						.Do(Operation.Append)
+						.Matching(
+							TransformationPatternFactory.CreateGdSnippetPattern("var in_zone = false"
+							)
+						)
+						.With(
+							"""
+
+							in_zone = true
 
 							""",
 							1
